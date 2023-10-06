@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum EPriveleges {
+  student
+  administrator
+}
+
+model User {
+  id         String       @id @default(uuid()) @db.VarChar(50)
+  email      String       @unique
+  username   String       @unique
+  password   String
+  firstName  String
+  lastName   String
+  cpf        String       @db.VarChar(14)
+  issued     DateTime
+  lastAccess DateTime
+  privilege  EPriveleges
+  Course     Course[]
+  Answer     Answer[]
+  Enrolment  Enrollment[]
+}
+
+model Course {
+  id                String @id @default(uuid()) @db.VarChar(50)
+  name              String @unique
+  ownerId           String @db.VarChar(50)
+  rating            Float
+  numberOfRatings   Int
+  photo             String
+  enrollmentsNumber BigInt
+  price             Float
+
+  Owner     User         @relation(fields: [ownerId], references: [id])
+  Module    Module[]
+  Enrolment Enrollment[]
+}
+
+model Forum {
+  id          String @id @default(uuid()) @db.VarChar(50)
+  classId     String @db.VarChar(50)
+  name        String @db.VarChar(255)
+  description String @db.VarChar(512)
+
+  Class Class @relation(fields: [classId], references: [id])
+  Faq   Faq[]
+}
+
+model Faq {
+  id       String @id @default(uuid()) @db.VarChar(50)
+  forumId  String @db.VarChar(50)
+  question String @db.VarChar(255)
+  answer   String @db.VarChar(512)
+
+  Forum Forum @relation(fields: [forumId], references: [id])
+}
+
+model Module {
+  id          String @id @default(uuid()) @db.VarChar(50)
+  courseId    String @db.VarChar(50)
+  name        String @db.VarChar(255)
+  description String @db.VarChar(512)
+
+  Course Course  @relation(fields: [courseId], references: [id])
+  Class  Class[]
+  Test   Test[]
+}
+
+model Test {
+  id            String @id @default(uuid()) @db.VarChar(50)
+  moduleId      String @db.VarChar(50)
+  question      String @db.VarChar(255)
+  answers       String @db.VarChar(1023)
+  correctAnswer String @db.VarChar(254)
+
+  Module Module   @relation(fields: [moduleId], references: [id])
+  Answer Answer[]
+}
+
+model Answer {
+  id     String @id @default(uuid()) @db.VarChar(50)
+  testId String @db.VarChar(50)
+  userId String @db.VarChar(50)
+  answer String @db.VarChar(255)
+
+  Test Test @relation(fields: [testId], references: [id])
+  User User @relation(fields: [userId], references: [id])
+}
+
+model Class {
+  id          String @id @default(uuid()) @db.VarChar(50)
+  moduleId    String @db.VarChar(50)
+  name        String @db.VarChar(255)
+  description String @db.VarChar(512)
+  url         String @db.VarChar(255)
+
+  Module Module  @relation(fields: [moduleId], references: [id])
+  Forum  Forum[]
+}
+
+model Enrollment {
+  id             String  @id @default(uuid()) @db.VarChar(50)
+  studentId      String  @db.VarChar(50)
+  courseId       String  @db.VarChar(50)
+  hasRatedCourse Boolean @default(false)
+
+  Student User   @relation(fields: [studentId], references: [id])
+  Course  Course @relation(fields: [courseId], references: [id])
+}

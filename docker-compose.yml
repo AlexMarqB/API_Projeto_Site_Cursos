@@ -1,0 +1,12 @@
+version: '3'
+name: 'projeto-03-cursos'
+services:
+  my-sql-database:
+    image: mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: '12345678'
+      MYSQL_DATABASE: 'learn-hub-cursos-database'
+    volumes:
+      - ./my-sql-database:/var/lib/mysql
